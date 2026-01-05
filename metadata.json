@@ -1,0 +1,5 @@
+{
+  "name": "ChunkViz - RAG 切分策略可视化",
+  "description": "一个强大的工具，用于可视化和比较 RAG 应用的不同文本切分策略，支持固定大小、递归字符和基于 Gemini 的语义切分。",
+  "requestFramePermissions": []
+}
