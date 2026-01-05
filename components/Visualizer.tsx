@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Chunk } from '../types';
-import { Copy, Check, BarChart3, List, Grid } from 'lucide-react';
+import { Copy, Check, BarChart3, List, Grid, Coins } from 'lucide-react';
 
 interface VisualizerProps {
   chunks: Chunk[];
@@ -13,6 +13,9 @@ export const Visualizer: React.FC<VisualizerProps> = ({ chunks, loading }) => {
 
   // Stats
   const avgSize = chunks.length > 0 ? Math.round(chunks.reduce((acc, c) => acc + c.length, 0) / chunks.length) : 0;
+  const totalTokens = chunks.length > 0 ? chunks.reduce((acc, c) => acc + (c.tokenCount || 0), 0) : 0;
+  
+  // Size range
   const minSize = chunks.length > 0 ? Math.min(...chunks.map(c => c.length)) : 0;
   const maxSize = chunks.length > 0 ? Math.max(...chunks.map(c => c.length)) : 0;
 
@@ -48,18 +51,25 @@ export const Visualizer: React.FC<VisualizerProps> = ({ chunks, loading }) => {
     <div className="flex flex-col h-full bg-slate-50/50">
       {/* Header / Stats */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-6 py-4 border-b border-slate-200 bg-white shadow-sm gap-4">
-        <div className="flex items-center gap-6 text-sm">
+        <div className="flex flex-wrap items-center gap-6 text-sm">
            <div>
              <span className="block text-xs text-slate-500 font-semibold uppercase">切分数量</span>
              <span className="font-mono text-lg font-bold text-slate-800">{chunks.length}</span>
            </div>
-           <div className="w-px h-8 bg-slate-100"></div>
+           <div className="hidden sm:block w-px h-8 bg-slate-100"></div>
            <div>
-             <span className="block text-xs text-slate-500 font-semibold uppercase">平均大小</span>
-             <span className="font-mono text-lg font-bold text-slate-800">{avgSize} <span className="text-xs font-normal text-slate-400">字符</span></span>
+             <span className="block text-xs text-slate-500 font-semibold uppercase">平均字符</span>
+             <span className="font-mono text-lg font-bold text-slate-800">{avgSize}</span>
            </div>
            <div className="hidden sm:block w-px h-8 bg-slate-100"></div>
-           <div className="hidden sm:block">
+           <div>
+             <span className="block text-xs text-slate-500 font-semibold uppercase">总 Token (估算)</span>
+             <span className="font-mono text-lg font-bold text-indigo-600 flex items-center gap-1">
+                {totalTokens}
+             </span>
+           </div>
+           <div className="hidden lg:block w-px h-8 bg-slate-100"></div>
+           <div className="hidden lg:block">
              <span className="block text-xs text-slate-500 font-semibold uppercase">长度范围</span>
              <span className="font-mono text-sm font-bold text-slate-800">{minSize} - {maxSize} <span className="text-xs font-normal text-slate-400">字符</span></span>
            </div>
@@ -99,9 +109,16 @@ export const Visualizer: React.FC<VisualizerProps> = ({ chunks, loading }) => {
                 className={`relative group rounded-xl border p-4 transition-all hover:shadow-md ${colors[i % colors.length]}`}
               >
                 <div className="flex justify-between items-start mb-2">
-                   <div className="flex items-center gap-2">
+                   <div className="flex items-center gap-3">
                      <span className="px-2 py-0.5 bg-white/50 rounded-full text-xs font-bold border border-black/5">#{chunk.index + 1}</span>
-                     <span className="text-xs font-mono opacity-60">{chunk.length} 字符</span>
+                     <div className="flex items-center gap-2 text-xs font-mono opacity-60">
+                         <span>{chunk.length} 字符</span>
+                         <span>•</span>
+                         <span className="flex items-center gap-0.5">
+                            <Coins className="w-3 h-3" />
+                            {chunk.tokenCount} Token
+                         </span>
+                     </div>
                    </div>
                    <button 
                      onClick={() => handleCopy(chunk.content, chunk.id)}
@@ -110,7 +127,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({ chunks, loading }) => {
                      {copiedId === chunk.id ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                    </button>
                 </div>
-                <p className="text-sm leading-relaxed whitespace-pre-wrap font-mono">
+                <p className="text-sm leading-relaxed whitespace-pre-wrap font-mono break-words">
                   {chunk.content}
                 </p>
               </div>

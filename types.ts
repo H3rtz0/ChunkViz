@@ -5,6 +5,7 @@ export interface Chunk {
   content: string;
   index: number;
   length: number;
+  tokenCount: number;
 }
 
 export type SemanticProvider = 'google' | 'deepseek' | 'aliyun' | 'custom';

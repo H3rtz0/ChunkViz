@@ -1,5 +1,19 @@
 import { Chunk, ChunkingConfig } from '../types';
 
+export const estimateTokenCount = (text: string): number => {
+  // Simple heuristic for UI visualization:
+  // CJK characters ~ 1 token
+  // Non-CJK characters ~ 0.25 tokens (4 chars per token)
+  let cjkCount = 0;
+  const cjkRegex = /[\u4e00-\u9fa5\u3040-\u30ff\u3400-\u4dbf\uf900-\ufaff\uff66-\uff9f]/g;
+  const matches = text.match(cjkRegex);
+  cjkCount = matches ? matches.length : 0;
+  
+  const otherCount = Math.max(0, text.length - cjkCount);
+  
+  return cjkCount + Math.ceil(otherCount / 4);
+};
+
 export const generateFixedSizeChunks = (text: string, config: ChunkingConfig): Chunk[] => {
   const { chunkSize, chunkOverlap } = config;
   if (chunkSize <= 0) return [];
@@ -21,6 +35,7 @@ export const generateFixedSizeChunks = (text: string, config: ChunkingConfig): C
       index,
       content,
       length: content.length,
+      tokenCount: estimateTokenCount(content),
     });
 
     start += step;
@@ -71,9 +86,6 @@ export const generateRecursiveChunks = (text: string, config: ChunkingConfig): C
     
     for (let i = 0; i < parts.length; i++) {
        const part = parts[i];
-       // Re-attach separator if it was split out (regex capture group keeps it)
-       // Standard generic recursive splitter often tries to keep separators attached.
-       // For simplicity, we just concatenate.
        
        if (currentChunk.length + part.length > chunkSize) {
           if (currentChunk.length > 0) {
@@ -156,7 +168,8 @@ export const generateRecursiveChunks = (text: string, config: ChunkingConfig): C
       id: `rec-chunk-${i}-${Date.now()}`,
       index: i,
       content: c,
-      length: c.length
+      length: c.length,
+      tokenCount: estimateTokenCount(c),
   }));
 };
 
@@ -182,7 +195,8 @@ export const generateJsonChunks = (text: string, config: ChunkingConfig): Chunk[
           id: `json-chunk-${index}-${Date.now()}`,
           index: index++,
           content,
-          length: content.length
+          length: content.length,
+          tokenCount: estimateTokenCount(content),
       });
   };
 

@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Chunk, ChunkingConfig } from '../types';
+import { estimateTokenCount } from './chunkers';
 
 export const generateSemanticChunks = async (text: string, config: ChunkingConfig): Promise<Chunk[]> => {
   const { provider, apiKey, baseUrl, semanticModel } = config;
@@ -96,7 +97,8 @@ export const generateSemanticChunks = async (text: string, config: ChunkingConfi
       id: `sem-chunk-${index}-${Date.now()}`,
       index,
       content,
-      length: content.length
+      length: content.length,
+      tokenCount: estimateTokenCount(content),
     }));
 
   } catch (error) {
